@@ -1,12 +1,12 @@
-set(PACKAGE_VERSION "3.9.1")
+set(PACKAGE_VERSION "4.0.0svn")
 
 # LLVM is API-compatible only with matching major.minor versions
 # and patch versions not less than that requested.
-if("3.9" VERSION_EQUAL
+if("4.0" VERSION_EQUAL
     "${PACKAGE_FIND_VERSION_MAJOR}.${PACKAGE_FIND_VERSION_MINOR}"
-   AND NOT "1" VERSION_LESS "${PACKAGE_FIND_VERSION_PATCH}")
+   AND NOT "0" VERSION_LESS "${PACKAGE_FIND_VERSION_PATCH}")
   set(PACKAGE_VERSION_COMPATIBLE 1)
-  if("1" VERSION_EQUAL
+  if("0" VERSION_EQUAL
       "${PACKAGE_FIND_VERSION_PATCH}")
     set(PACKAGE_VERSION_EXACT 1)
   endif()

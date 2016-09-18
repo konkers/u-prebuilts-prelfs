@@ -18,10 +18,8 @@
 #include "clang/AST/DeclarationName.h"
 #include "clang/AST/TemplateBase.h"
 #include "clang/Basic/Diagnostic.h"
-#include "clang/Basic/FileManager.h"
 #include "clang/Basic/FileSystemOptions.h"
 #include "clang/Basic/IdentifierTable.h"
-#include "clang/Basic/SourceManager.h"
 #include "clang/Basic/Version.h"
 #include "clang/Lex/ExternalPreprocessorSource.h"
 #include "clang/Lex/HeaderSearch.h"
@@ -33,9 +31,6 @@
 #include "clang/Serialization/Module.h"
 #include "clang/Serialization/ModuleFileExtension.h"
 #include "clang/Serialization/ModuleManager.h"
-#include "llvm/ADT/APFloat.h"
-#include "llvm/ADT/APInt.h"
-#include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/MapVector.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/ADT/SmallSet.h"
@@ -43,11 +38,9 @@
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/ADT/TinyPtrVector.h"
-#include "llvm/Bitcode/BitstreamReader.h"
 #include "llvm/Support/DataTypes.h"
 #include "llvm/Support/Timer.h"
 #include <deque>
-#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -55,10 +48,16 @@
 
 namespace llvm {
   class MemoryBuffer;
+  class APInt;
+  class APSInt;
+  class APFloat;
 }
 
 namespace clang {
 
+class SourceManager;
+class HeaderSearchOptions;
+class FileManager;
 class AddrLabelExpr;
 class ASTConsumer;
 class ASTContext;
@@ -283,6 +282,21 @@ public:
 
 private:
   void Error(const char *Msg);
+};
+
+/// \brief ASTReaderListenter implementation to set SuggestedPredefines of
+/// ASTReader which is required to use a pch file. This is the replacement
+/// of PCHValidator or SimplePCHValidator when using a pch file without
+/// validating it.
+class SimpleASTReaderListener : public ASTReaderListener {
+  Preprocessor &PP;
+
+public:
+  SimpleASTReaderListener(Preprocessor &PP)
+    : PP(PP) {}
+
+  bool ReadPreprocessorOptions(const PreprocessorOptions &PPOpts, bool Complain,
+                               std::string &SuggestedPredefines) override;
 };
 
 namespace serialization {
@@ -1154,7 +1168,7 @@ private:
   static ASTReadResult ReadOptionsBlock(
       llvm::BitstreamCursor &Stream, unsigned ClientLoadCapabilities,
       bool AllowCompatibleConfigurationMismatch, ASTReaderListener &Listener,
-      std::string &SuggestedPredefines);
+      std::string &SuggestedPredefines, bool ValidateDiagnosticOptions);
   ASTReadResult ReadASTBlock(ModuleFile &F, unsigned ClientLoadCapabilities);
   ASTReadResult ReadExtensionBlock(ModuleFile &F);
   bool ParseLineTable(ModuleFile &F, const RecordData &Record);
@@ -1517,7 +1531,8 @@ public:
   readASTFileControlBlock(StringRef Filename, FileManager &FileMgr,
                           const PCHContainerReader &PCHContainerRdr,
                           bool FindModuleFileExtensions,
-                          ASTReaderListener &Listener);
+                          ASTReaderListener &Listener,
+                          bool ValidateDiagnosticOptions);
 
   /// \brief Determine whether the given AST file is acceptable to load into a
   /// translation unit with the given language and target options.

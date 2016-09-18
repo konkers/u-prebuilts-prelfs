@@ -68,11 +68,13 @@ public:
 
   /// Paired begin/end actions for all types. Receives all record data,
   /// including the fixed-length record prefix.
-  Error visitTypeBegin(const CVRecord<TypeLeafKind> &Record) override;
+  Expected<TypeLeafKind>
+  visitTypeBegin(const CVRecord<TypeLeafKind> &Record) override;
   Error visitTypeEnd(const CVRecord<TypeLeafKind> &Record) override;
 
 #define TYPE_RECORD(EnumName, EnumVal, Name)                                   \
-  Error visit##Name(Name##Record &Record) override;
+  Error visitKnownRecord(const CVRecord<TypeLeafKind> &CVR,                    \
+                         Name##Record &Record) override;
 #define MEMBER_RECORD(EnumName, EnumVal, Name)                                 \
   TYPE_RECORD(EnumName, EnumVal, Name)
 #define TYPE_RECORD_ALIAS(EnumName, EnumVal, Name, AliasName)
@@ -86,6 +88,7 @@ private:
 
   ScopedPrinter *W;
 
+  bool IsInFieldList = false;
   bool PrintRecordBytes = false;
 
   /// Name of the current type. Only valid before visitTypeEnd.

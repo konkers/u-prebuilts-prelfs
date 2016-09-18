@@ -91,16 +91,16 @@
 /* #undef LLVM_USE_OPROFILE */
 
 /* Major version of the LLVM API */
-#define LLVM_VERSION_MAJOR 3
+#define LLVM_VERSION_MAJOR 4
 
 /* Minor version of the LLVM API */
-#define LLVM_VERSION_MINOR 9
+#define LLVM_VERSION_MINOR 0
 
 /* Patch version of the LLVM API */
-#define LLVM_VERSION_PATCH 1
+#define LLVM_VERSION_PATCH 0
 
 /* LLVM version string */
-#define LLVM_VERSION_STRING "3.9.1"
+#define LLVM_VERSION_STRING "4.0.0svn"
 
 /* Define if we link Polly to the tools */
 /* #undef LINK_POLLY_INTO_TOOLS */
